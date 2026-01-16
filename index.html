@@ -3,55 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro YouTube Sync</title>
+    <title>YouTube Sync Party</title>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: #fff; margin: 0; padding: 20px; }
-        .wrapper { max-width: 1000px; margin: auto; }
-        #video-section { display: flex; flex-direction: column; align-items: center; }
-        .video-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .input-group { margin: 20px 0; display: flex; gap: 10px; width: 100%; }
-        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; }
-        button { padding: 12px 24px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        #addBtn { background: #f00; color: white; }
-        #nextBtn { background: #333; color: white; }
-        button:hover { opacity: 0.8; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .container { width: 100%; max-width: 800px; }
         
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; background: #1a1a1a; border-radius: 8px; }
+        /* Player at the top */
+        #player-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        
+        .linker-box { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; }
+        button { padding: 12px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        #addBtn { background: #ff0000; color: white; }
+        #nextBtn { background: #ffffff; color: #000; }
+        button:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        table { width: 100%; border-collapse: collapse; background: #1a1a1a; border-radius: 8px; overflow: hidden; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #333; }
-        th { color: #aaa; font-size: 12px; text-transform: uppercase; }
-        .playing-now { color: #0f0; font-weight: bold; }
+        th { background: #252525; color: #aaa; font-size: 12px; text-transform: uppercase; }
+        .no-videos { text-align: center; color: #666; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <div id="video-section">
-            <div class="video-wrapper">
-                <div id="player"></div>
-            </div>
-            
-            <div class="input-group">
-                <input type="text" id="videoUrl" placeholder="Paste YouTube link here...">
-                <button id="addBtn">Add to Queue</button>
-                <button id="nextBtn">Skip to Next ⏭️</button>
-            </div>
+    <div class="container">
+        <!-- Embedded Player Above Everything -->
+        <div id="player-wrapper">
+            <div id="player"></div>
         </div>
 
-        <h3>Up Next</h3>
+        <!-- URL Linker -->
+        <div class="linker-box">
+            <input type="text" id="videoUrl" placeholder="Paste YouTube link here...">
+            <button id="addBtn">Add to Queue</button>
+            <button id="nextBtn">Global Next ⏭️</button>
+        </div>
+
+        <!-- Queue Table -->
         <table>
             <thead>
                 <tr>
-                    <th>Order</th>
+                    <th>#</th>
                     <th>Video ID</th>
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody id="queueBody"></tbody>
+            <tbody id="queueBody">
+                <!-- Rows added by app.js -->
+            </tbody>
         </table>
     </div>
 
-    <!-- The YouTube API must be loaded after the player div exists -->
+    <!-- YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Module Script -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
