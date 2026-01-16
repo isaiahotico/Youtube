@@ -1,8 +1,24 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, doc, setDoc, deleteDoc, getDocs } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+/* ================= TELEGRAM ================= */
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
 
-// Your Firebase configuration
+if (!tg.initDataUnsafe?.user) {
+  document.body.innerHTML = "<h3 style='text-align:center'>Open from Telegram</h3>";
+  throw new Error("Not Telegram");
+}
+
+const tgUser = tg.initDataUnsafe.user;
+document.getElementById("userBar").innerText =
+  "👤 " + (tgUser.username ? `@${tgUser.username}` : tgUser.first_name);
+
+/* ================= FIREBASE ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, deleteDoc, doc,
+  onSnapshot, query, orderBy, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyAj6o2HbMEC472gDoNuFSDmdOSJj8k9S_U",
   authDomain: "fir-493d0.firebaseapp.com",
@@ -12,97 +28,108 @@ const firebaseConfig = {
   appId: "1:935141131610:web:7998e21d07d7b4c71b5f63"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+/* ================= YOUTUBE ================= */
 let player;
+let playlist = [];
+let currentIndex = 0;
+let loopMode = false;
+let shuffleMode = false;
 
-// 1. YouTube Player API - Initialize the player
 window.onYouTubeIframeAPIReady = () => {
-    player = new YT.Player('player', {
-        height: '100%',
-        width: '100%',
-        videoId: '', // Initially empty
-        playerVars: { 'autoplay': 1, 'rel': 0 },
-        events: {
-            'onReady': onPlayerReady
-        }
-    });
+  player = new YT.Player("player", {
+    events: { onStateChange }
+  });
 };
 
-function onPlayerReady() {
-    // Listen for the "Global Current Video" in Firestore
-    onSnapshot(doc(db, "status", "current"), (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.data();
-            player.loadVideoById(data.videoId);
-        }
-    });
+function onStateChange(e) {
+  if (e.data === YT.PlayerState.ENDED) nextVideo();
 }
 
-// 2. Extract Video ID helper
-function extractID(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+function nextVideo() {
+  if (loopMode) {
+    player.playVideo();
+    return;
+  }
+
+  if (shuffleMode) {
+    currentIndex = Math.floor(Math.random() * playlist.length);
+  } else {
+    currentIndex++;
+    if (currentIndex >= playlist.length) currentIndex = 0;
+  }
+
+  const next = playlist[currentIndex];
+  if (next) player.loadVideoById(next.videoId);
 }
 
-// 3. Button: Add video to Firestore queue
-document.getElementById('addBtn').onclick = async () => {
-    const input = document.getElementById('videoUrl');
-    const vId = extractID(input.value);
+/* ================= HELPERS ================= */
+function extractVideoId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|shorts\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
 
-    if (vId) {
-        await addDoc(collection(db, "queue"), {
-            videoId: vId,
-            timestamp: Date.now()
-        });
-        input.value = "";
-    } else {
-        alert("Invalid YouTube URL");
-    }
+/* ================= PLAYLIST ================= */
+window.addToPlaylist = async () => {
+  const url = ytUrl.value;
+  const videoId = extractVideoId(url);
+  if (!videoId) return alert("Invalid YouTube URL");
+
+  await addDoc(collection(db, "playlists"), {
+    videoId,
+    order: Date.now(),
+    addedBy: tgUser.id
+  });
+
+  ytUrl.value = "";
 };
 
-// 4. Button: Global Next (Changes for all users)
-document.getElementById('nextBtn').onclick = async () => {
-    // Query the oldest video in the queue
-    const q = query(collection(db, "queue"), orderBy("timestamp", "asc"), limit(1));
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
-        const nextDoc = snapshot.docs[0];
-        const nextData = nextDoc.data();
-
-        // Set this video as the global "current" video
-        await setDoc(doc(db, "status", "current"), {
-            videoId: nextData.videoId
-        });
-
-        // Delete it from the queue
-        await deleteDoc(doc(db, "queue", nextDoc.id));
-    } else {
-        alert("The queue is empty!");
-    }
+window.playVideo = (index) => {
+  currentIndex = index;
+  player.loadVideoById(playlist[index].videoId);
 };
 
-// 5. Update the UI Table in real-time
-const queueQuery = query(collection(db, "queue"), orderBy("timestamp", "asc"));
-onSnapshot(queueQuery, (snapshot) => {
-    const tbody = document.getElementById('queueBody');
-    tbody.innerHTML = "";
+window.deleteVideo = async (id) => {
+  await deleteDoc(doc(db, "playlists", id));
+};
 
-    if (snapshot.empty) {
-        tbody.innerHTML = "<tr><td colspan='3' class='no-videos'>No videos in queue</td></tr>";
-        return;
-    }
+onSnapshot(
+  query(collection(db, "playlists"), orderBy("order")),
+  snap => {
+    playlist = [];
+    playlistEl.innerHTML = "";
 
-    snapshot.forEach((doc, index) => {
-        const data = doc.data();
-        const row = `<tr>
-            <td>${index + 1}</td>
-            <td>${data.videoId}</td>
-            <td><span style="color: #ff9800">Waiting...</span></td>
-        </tr>`;
-        tbody.innerHTML += row;
+    snap.forEach((d) => {
+      const data = d.data();
+      playlist.push({ ...data, id: d.id });
+
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <span onclick="playVideo(${playlist.length - 1})">
+          ▶ ${data.videoId}
+        </span>
+        <button onclick="deleteVideo('${d.id}')">❌</button>
+      `;
+
+      row.draggable = true;
+      row.ondragend = async () => {
+        await updateDoc(doc(db, "playlists", d.id), { order: Date.now() });
+      };
+
+      playlistEl.appendChild(row);
     });
-});
+  }
+);
+
+/* ================= LOOP / SHUFFLE ================= */
+window.toggleLoop = () => {
+  loopMode = !loopMode;
+  loopBtn.classList.toggle("active", loopMode);
+};
+
+window.toggleShuffle = () => {
+  shuffleMode = !shuffleMode;
+  shuffleBtn.classList.toggle("active", shuffleMode);
+};
