@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, set, remove, query, limitToFirst, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, doc, setDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAj6o2HbMEC472gDoNuFSDmdOSJj8k9S_U",
   authDomain: "fir-493d0.firebaseapp.com",
@@ -11,22 +10,17 @@ const firebaseConfig = {
   appId: "1:935141131610:web:7998e21d07d7b4c71b5f63"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const queueRef = ref(db, 'videoQueue');
-const currentVideoRef = ref(db, 'currentVideo');
-
+const db = getFirestore(app);
 let player;
 
-// 1. Initialize YouTube Player
-// Note: This must be on the window object for the YT API to find it
+// --- 1. YouTube Player Logic ---
 window.onYouTubeIframeAPIReady = () => {
     player = new YT.Player('player', {
         height: '100%',
         width: '100%',
-        videoId: '', // Initially empty
-        playerVars: { 'autoplay': 1, 'playsinline': 1 },
+        videoId: '', 
+        playerVars: { 'autoplay': 1, 'mute': 0 },
         events: {
             'onReady': onPlayerReady
         }
@@ -34,78 +28,71 @@ window.onYouTubeIframeAPIReady = () => {
 };
 
 function onPlayerReady() {
-    // Listen for the "Current Video" in Firebase. 
-    // If it changes for one person, it changes for EVERYONE.
-    onValue(currentVideoRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data && data.videoId) {
-            player.loadVideoById(data.videoId);
+    // Listen for current video changes in Firestore
+    onSnapshot(doc(db, "status", "current"), (doc) => {
+        if (doc.exists()) {
+            const videoId = doc.data().videoId;
+            player.loadVideoById(videoId);
         }
     });
 }
 
-// 2. Helper: Extract Video ID from various YouTube URL formats
-function getYouTubeID(url) {
+// --- 2. Helper: Extract ID ---
+function extractId(url) {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
-// 3. Button Event: Add Video to Firebase Queue
-document.getElementById('addBtn').addEventListener('click', () => {
-    const urlInput = document.getElementById('videoUrl');
-    const vidId = getYouTubeID(urlInput.value);
+// --- 3. Add to Firestore Queue ---
+document.getElementById('addBtn').addEventListener('click', async () => {
+    const input = document.getElementById('videoUrl');
+    const vidId = extractId(input.value);
 
     if (vidId) {
-        push(queueRef, {
+        await addDoc(collection(db, "queue"), {
             videoId: vidId,
-            addedAt: Date.now()
+            createdAt: Date.now()
         });
-        urlInput.value = "";
+        input.value = "";
     } else {
         alert("Invalid YouTube URL");
     }
 });
 
-// 4. Button Event: Play Next (Global Sync)
+// --- 4. Global Skip / Play Next ---
 document.getElementById('nextBtn').addEventListener('click', async () => {
-    // Fetch the first item in the queue
-    const firstItemQuery = query(queueRef, limitToFirst(1));
-    const snapshot = await get(firstItemQuery);
+    const q = query(collection(db, "queue"), orderBy("createdAt", "asc"), limit(1));
+    const querySnapshot = await getDocs(q);
 
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        const key = Object.keys(data)[0];
-        const nextVideo = data[key];
+    if (!querySnapshot.empty) {
+        const nextVideoDoc = querySnapshot.docs[0];
+        const nextVideoData = nextVideoDoc.data();
 
-        // 1. Set the global current video
-        set(currentVideoRef, { videoId: nextVideo.videoId });
+        // Update the global "current" status
+        await setDoc(doc(db, "status", "current"), {
+            videoId: nextVideoData.videoId
+        });
 
-        // 2. Remove that video from the queue
-        remove(ref(db, `videoQueue/${key}`));
+        // Delete from queue
+        await deleteDoc(doc(db, "queue", nextVideoDoc.id));
     } else {
-        alert("No more videos in the queue!");
+        alert("Queue is empty!");
     }
 });
 
-// 5. Listener: Update UI Table when Queue changes
-onValue(queueRef, (snapshot) => {
-    const queueBody = document.getElementById('queueBody');
-    queueBody.innerHTML = "";
-    const data = snapshot.val();
-
-    if (data) {
-        let count = 1;
-        for (let key in data) {
-            const row = `<tr>
-                <td>${count}</td>
-                <td>${data[key].videoId}</td>
-                <td><span style="color: #aaa;">Waiting...</span></td>
-            </tr>`;
-            queueBody.innerHTML += row;
-            count++;
-        }
-    } else {
-        queueBody.innerHTML = "<tr><td colspan='3' style='text-align:center'>The queue is empty.</td></tr>";
-    }
+// --- 5. Sync Table UI ---
+onSnapshot(query(collection(db, "queue"), orderBy("createdAt", "asc")), (snapshot) => {
+    const tbody = document.getElementById('queueBody');
+    tbody.innerHTML = "";
+    
+    snapshot.forEach((doc, index) => {
+        const data = doc.data();
+        const row = `<tr>
+            <td>${index + 1}</td>
+            <td>${data.videoId}</td>
+            <td>Waiting...</td>
+        </tr>`;
+        tbody.innerHTML += row;
+    });
 });
