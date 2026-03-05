@@ -121,7 +121,7 @@ document.getElementById('submitBtn').onclick = async () => {
         limit = isWatch ? 100 : 50;
     } else {
         cost = isWatch ? 5 : 7;
-        limit = isWatch ? 550 : 65;
+        limit = isWatch ? 550 : 260;
         if (userData.balance < cost) return alert(`Insufficient Balance! You need ₱${cost}.00`);
     }
 
