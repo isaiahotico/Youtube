@@ -70,7 +70,7 @@ function updateUI() {
         <div class="bg-slate-800 p-2 rounded-lg border border-slate-700">PAID (₱5): 550 views</div>
     ` : `
         <div class="bg-slate-800 p-2 rounded-lg border border-slate-700">FREE: 50 subs</div>
-        <div class="bg-slate-800 p-2 rounded-lg border border-slate-700">PAID (₱7): 65 subs</div>
+        <div class="bg-slate-800 p-2 rounded-lg border border-slate-700">PAID (₱7): 260 subs</div>
     `;
 
     renderQueue();
