@@ -3,78 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAPERHOUSE_YOUTUBE_FREE - Watch & Sub</title>
+    <title>FreeGcashads - Multi Task</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Ad Scripts -->
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <script src='//libtl.com/sdk.js' data-zone='10555663' data-sdk='show_10555663'></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .tab-active { background: #ef4444; color: white; border-color: #ef4444; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans pb-10">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
 
-    <!-- Header -->
-    <nav class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-40 shadow-2xl">
+    <!-- Navbar -->
+    <nav class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-40">
         <div class="max-w-xl mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-black text-red-500 italic leading-none">FREEGCASH<span class="text-white">ADS</span></h1>
                 <p id="tgUserDisplay" class="text-blue-400 text-[10px] font-bold mt-1">@Fetching...</p>
             </div>
-            <div class="text-right">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">Balance</p>
-                <p class="text-green-400 font-mono font-black text-lg leading-none">₱<span id="userBalance">0.00</span></p>
+            <div class="flex items-center gap-2">
+                <a href="https://paypal.me/isaiotico" target="_blank" class="bg-yellow-600 text-[10px] font-bold px-2 py-1 rounded hover:bg-yellow-500 transition">☕ Coffee?</a>
+                <div class="bg-slate-800 px-3 py-1 rounded-xl border border-slate-700 text-right">
+                    <p class="text-[9px] text-slate-500 uppercase font-black">Balance</p>
+                    <p class="text-green-400 font-mono font-black text-sm leading-none">₱<span id="userBalance">0.00</span></p>
+                </div>
             </div>
         </div>
     </nav>
 
+    <!-- Category Tabs (Horizontal Scroll) -->
+    <div class="bg-slate-900 border-b border-slate-800 sticky top-[64px] z-30 overflow-x-auto no-scrollbar flex gap-2 p-3">
+        <button onclick="switchCat('yt_watch')" class="cat-btn tab-active px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">YT Watch</button>
+        <button onclick="switchCat('yt_sub')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">YT Sub</button>        <button onclick="switchCat('yt_like')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">YT Like</button>
+        <button onclick="switchCat('yt_comment')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">YT Comment</button>
+        <button onclick="switchCat('fb_follow')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">FB Follow</button>
+        <button onclick="switchCat('fb_like')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">FB Like</button>
+        <button onclick="switchCat('fb_comment')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">FB Comment</button>
+        <button onclick="switchCat('web_visit')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">Visit Site</button>
+        <button onclick="switchCat('playstore')" class="cat-btn px-4 py-2 rounded-full border border-slate-700 text-xs font-bold whitespace-nowrap">Playstore</button>
+        <button onclick="adminPrompt()" class="bg-purple-900/50 px-4 py-2 rounded-full border border-purple-700 text-xs font-bold whitespace-nowrap">Admin</button>
+    </div>
+
     <main class="max-w-xl mx-auto p-4 space-y-6">
         
-        <!-- Toggle Tabs -->
-        <div class="flex bg-slate-900 p-1 rounded-2xl border border-slate-800">
-            <button id="tabWatch" class="flex-1 py-3 rounded-xl font-bold transition-all bg-red-600 text-white">Watch & Earn</button>
-            <button id="tabSub" class="flex-1 py-3 rounded-xl font-bold transition-all text-slate-400">Sub & Earn</button>
-        </div>
-
-        <!-- Submission Form -->
+        <!-- Submission Card -->
         <section class="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-xl">
-            <h2 id="formTitle" class="font-bold text-slate-300 mb-4">Promote YouTube Video</h2>
-            <input id="ytInput" type="text" placeholder="Paste YouTube Link Here" 
+            <h2 id="formTitle" class="font-bold text-slate-300 mb-4 flex justify-between">
+                <span>Add Task</span>
+                <span id="slotInfo" class="text-[10px] text-red-500 uppercase">5 Free Left</span>
+            </h2>
+            <input id="linkInput" type="text" placeholder="Paste Link Here..." 
                 class="w-full bg-slate-950 border border-slate-700 p-4 rounded-2xl mb-4 focus:ring-2 focus:ring-red-500 outline-none">
             
-            <div id="pricingInfo" class="grid grid-cols-2 gap-3 mb-4 text-[11px]">
-                <!-- Dynamic pricing text -->
-            </div>
-
-            <button id="submitBtn" class="w-full bg-white text-black font-black py-4 rounded-2xl active:scale-95 transition-all shadow-lg uppercase">
-                Add to Queue
+            <button id="submitBtn" class="w-full bg-white text-black font-black py-4 rounded-2xl active:scale-95 transition-all shadow-lg uppercase text-sm">
+                Promote Link
             </button>
-            <p id="slotInfo" class="text-center text-[10px] mt-3 text-slate-500 font-bold tracking-widest"></p>
         </section>
 
         <!-- Task List -->
         <div>
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-black flex items-center gap-2">
+                <h2 class="text-sm font-black text-slate-500 tracking-widest uppercase flex items-center gap-2">
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    ACTIVE TASKS
+                    Available Tasks
                 </h2>
-                <span id="rewardBadge" class="text-[10px] bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-lg font-bold">Reward: ₱0.01</span>
+                <span id="rewardInfo" class="text-[10px] bg-green-500/10 text-green-500 px-2 py-1 rounded font-bold">Earn ₱0.01</span>
             </div>
             <div id="taskList" class="space-y-3">
-                <!-- Tasks injected here -->
+                <!-- Injected via app.js -->
             </div>
         </div>
     </main>
 
-    <!-- Player Modal -->
-    <div id="watchModal" class="fixed inset-0 bg-black z-50 hidden flex flex-col">
-        <div class="p-4 flex justify-between items-center bg-slate-900">
-            <span id="timer" class="text-2xl font-black text-red-500">30s</span>
-            <span id="modalType" class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">WATCHING AD...</span>
+    <!-- Global Timer Modal -->
+    <div id="actionModal" class="fixed inset-0 bg-slate-950 z-50 hidden flex flex-col items-center justify-center p-6">
+        <div id="timerDisplay" class="text-7xl font-black text-red-600 mb-4">30s</div>
+        <div id="playerContainer" class="w-full aspect-video bg-black rounded-xl overflow-hidden mb-6 hidden">
+            <div id="player"></div>
         </div>
-        <div class="flex-grow flex items-center justify-center">
-            <div id="player" class="w-full aspect-video"></div>
+        <div id="externalNotice" class="text-center space-y-4">
+            <p class="text-slate-400 text-sm">Stay on this page while the timer runs!</p>
+            <p id="targetUrlDisplay" class="text-blue-500 text-xs break-all"></p>
         </div>
-        <div class="p-6 bg-slate-900 text-center">
-            <p class="text-sm text-slate-400">Do not close! Redirecting after 30s...</p>
-        </div>
+        <p class="mt-8 text-[10px] text-slate-600 uppercase font-black tracking-widest animate-pulse">Wait for redirect to get reward</p>
     </div>
 
     <script type="module" src="app.js"></script>
