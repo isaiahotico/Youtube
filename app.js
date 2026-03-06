@@ -220,7 +220,7 @@ document.getElementById('addBtn').onclick = async () => {
     let cost = (used < 5) ? 0 : c.cost;
     let limit = (used < 5) ? c.free : c.paid;
 
-    if (userData.balance < cost) return alert("Insufficient Balance");
+    if (userData.balance < cost) return alert("Insufficient Balance Need 5 Peso Workhard for it");
 
     const data = {
         owner: user.username,
