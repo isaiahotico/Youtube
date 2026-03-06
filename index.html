@@ -3,39 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROPETAS Rewarder - Watch & Earn</title>
+    <title>PROPETAS - Rewarder v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-    <!-- Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         .active-tab { border-bottom: 3px solid #fbbf24; color: #fbbf24; }
-        /* Hide scrollbar for tabs */
-        .no-scrollbar::-webkit-scrollbar { display: none; } /* For webkit browsers */
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } /* For Edge/Firefox */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #anti-cheat-overlay { backdrop-filter: blur(8px); }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen pb-20">
 
-    <!-- Header / Balance -->
+    <!-- Anti-Cheat Warning (Hidden by default) -->
+    <div id="anti-cheat-overlay" class="fixed inset-0 z-[200] bg-black/80 flex flex-col items-center justify-center p-6 text-center hidden">
+        <i class="fas fa-exclamation-triangle text-6xl text-yellow-500 mb-4 animate-bounce"></i>
+        <h2 class="text-2xl font-bold mb-2">Wait! Task Not Finished</h2>
+        <p class="text-gray-300 mb-6">You returned to the app too early. Please go back to the opened link and stay there until the timer ends to receive your reward.</p>
+        <button onclick="resumeTask()" class="bg-yellow-600 px-8 py-3 rounded-full font-bold">I Understand</button>
+    </div>
+
+    <!-- Header -->
     <nav class="bg-gray-800 p-4 sticky top-0 z-50 shadow-lg border-b border-gray-700">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-yellow-500">PROPETAS <span class="text-white text-xs uppercase">Rewarder</span></h1>
+            <h1 class="text-xl font-bold text-yellow-500">PROPETAS</h1>
             <div class="text-right">
-                <p class="text-xs text-gray-400">Balance</p>
-                <p class="text-lg font-mono font-bold text-green-400">₱ <span id="user-balance">0.000</span></p>
+                <p class="text-[10px] text-gray-400 uppercase">Balance</p>
+                <p class="text-lg font-mono font-bold text-green-400">₱<span id="user-balance">0.000</span></p>
             </div>
         </div>
     </nav>
 
-    <!-- Telegram User & Profile -->
     <div class="container mx-auto p-4">
-        <div id="profile-section" class="bg-gray-800 rounded-lg p-4 mb-6 border border-gray-700">
-            <div class="flex items-center gap-4">
-                <div class="bg-blue-500 p-3 rounded-full"><i class="fab fa-telegram-plane text-2xl"></i></div>
+        <!-- Profile & Referral Card -->
+        <div class="bg-gray-800 rounded-2xl p-6 mb-6 border border-gray-700 shadow-xl">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-blue-600 p-4 rounded-full"><i class="fab fa-telegram-plane text-2xl"></i></div>
                 <div>
-                    <h2 class="font-bold text-lg text-blue-300" id="display-username">Loading Telegram...</h2>
-                    <p class="text-xs text-gray-400">ID: <span id="user-uid">---</span></p>
+                    <h2 class="font-bold text-xl text-blue-300" id="display-username">@loading...</h2>                    <p class="text-xs text-gray-500">UID: <span id="user-uid">---</span></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-gray-900/50 p-3 rounded-lg border border-gray-700">
+                    <p class="text-[10px] text-gray-500 uppercase">Total Invites</p>
+                    <p class="text-lg font-bold" id="total-invites">0</p>
+                </div>
+                <div class="bg-gray-900/50 p-3 rounded-lg border border-gray-700">
+                    <p class="text-[10px] text-gray-500 uppercase">Referral Earned</p>
+                    <p class="text-lg font-bold text-yellow-500">₱<span id="ref-earned">0.000</span></p>
+                </div>
+            </div>
+
+            <div class="bg-yellow-900/20 border border-yellow-700/50 p-4 rounded-xl">
+                <p class="text-sm font-bold text-yellow-500 mb-2"><i class="fas fa-gift mr-2"></i>Referral Link (Earn 12%)</p>
+                <div class="flex gap-2">
+                    <input type="text" id="ref-link-input" readonly class="bg-black/40 border border-gray-600 rounded px-3 py-2 text-xs flex-1 text-gray-300">
+                    <button onclick="copyRef()" class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded text-xs font-bold transition">Copy</button>
                 </div>
             </div>
         </div>
@@ -43,86 +68,70 @@
         <!-- Navigation Tabs -->
         <div class="flex overflow-x-auto gap-4 mb-6 border-b border-gray-700 no-scrollbar">
             <button onclick="showTab('yt-watch')" class="tab-btn px-4 py-2 whitespace-nowrap active-tab" id="btn-yt-watch">YT Watch</button>
-            <button onclick="showTab('yt-sub')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-yt-sub">YT Sub</button>            <button onclick="showTab('fb-follow')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-fb-follow">FB Follow</button>
+            <button onclick="showTab('yt-sub')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-yt-sub">YT Sub</button>
+            <button onclick="showTab('fb-follow')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-fb-follow">FB Follow</button>
             <button onclick="showTab('web-visit')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-web-visit">Website</button>
-            <button onclick="showTab('playstore')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-playstore">PlayStore</button>
-            <button onclick="showTab('my-links')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-my-links">My Links</button>
-            <button onclick="showTab('add-link')" class="tab-btn px-4 py-2 whitespace-nowrap bg-yellow-600 rounded-t-lg" id="btn-add">Add Link</button>
+            <button onclick="showTab('playstore')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-playstore">PlayStore</button>            <button onclick="showTab('my-links')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-my-links">My Status</button>
+            <button onclick="showTab('add-link')" class="tab-btn px-4 py-2 whitespace-nowrap bg-yellow-600 rounded-t-lg" id="btn-add">Post Link</button>
         </div>
 
-        <!-- Content Area for Tasks and My Links -->
-        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Tasks/My Links will be injected here by app.js -->
-        </div>
+        <!-- Content Area -->
+        <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-        <!-- Follow Us Section -->
-        <div class="mt-10 p-4 bg-gray-800 rounded-lg border border-gray-700">
-            <h3 class="text-lg font-bold mb-3 text-yellow-500">Follow Us</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <a href="https://t.me/paperhouseinc" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
-                    <i class="fab fa-telegram-plane"></i> Telegram Channel
-                </a>
-                <a href="https://t.me/paperhouseinc" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
-                    <i class="fab fa-telegram-plane"></i> Telegram Group
-                </a>
-                <a href="https://www.facebook.com/profile.php?id=61586281245735" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
-                    <i class="fab fa-facebook"></i> Facebook Page
-                </a>
-            </div>
-        </div>
-
-        <!-- Admin Access -->
-        <div class="mt-10 p-4 border border-dashed border-gray-600 rounded text-center">            <button onclick="openAdmin()" class="text-gray-500 text-xs hover:text-white">Admin Access</button>
-        </div>
-
-        <!-- Coffee Support -->
-        <div class="mt-6 text-center">
-            <a href="https://www.paypal.com/paypalme/otico.isai2@gmail.com" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full text-sm transition">
-                <i class="fas fa-coffee"></i> Buy Admin Coffee
+        <!-- Official Channels -->
+        <div class="mt-10 space-y-3">
+            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest">Official Channels</h3>
+            <a href="https://t.me/paperhouseinc" target="_blank" class="flex items-center justify-between bg-gray-800 p-4 rounded-xl border border-gray-700">
+                <div class="flex items-center gap-3"><i class="fab fa-telegram text-blue-400 text-xl"></i> <span>Telegram Page</span></div>
+                <i class="fas fa-external-link-alt text-gray-600 text-sm"></i>
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=61586281245735" target="_blank" class="flex items-center justify-between bg-gray-800 p-4 rounded-xl border border-gray-700">
+                <div class="flex items-center gap-3"><i class="fab fa-facebook text-blue-600 text-xl"></i> <span>Facebook Page</span></div>
+                <i class="fas fa-external-link-alt text-gray-600 text-sm"></i>
+            </a>
+        </div><!-- Coffee Support -->
+        <div class="mt-10 text-center">
+            <a href="https://www.paypal.com/paypalme/otico.isai2@gmail.com" target="_blank" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition">
+                <i class="fas fa-coffee"></i> Support Admin: otico.isai2@gmail.com
             </a>
         </div>
     </div>
 
-    <!-- Modals -->
-    <!-- Timer Overlay -->
-    <div id="timer-modal" class="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-[100] hidden">
-        <div class="text-center bg-gray-800 p-6 rounded-xl border border-gray-700">
-            <h2 class="text-2xl mb-2" id="modal-task-title">Watching Video...</h2>
-            <p class="text-sm text-gray-400 mb-4">The link has opened in a <strong class="text-yellow-400">new tab</strong>. Please complete the task there and return to this page when the timer finishes.</p>
-            <div class="relative w-32 h-32 mx-auto">
-                <svg class="w-full h-full" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" stroke="#374151" stroke-width="5" fill="none" />
-                    <circle id="timer-progress" cx="50" cy="50" r="45" stroke="#fbbf24" stroke-width="5" fill="none" stroke-dasharray="283" stroke-dashoffset="283" />
+    <!-- Timer Modal -->
+    <div id="timer-modal" class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-[100] hidden">
+        <div class="text-center">
+            <div class="relative w-40 h-40 mx-auto mb-6">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" stroke="#1f2937" stroke-width="8" fill="none" />
+                    <circle id="timer-progress" cx="50" cy="50" r="45" stroke="#fbbf24" stroke-width="8" fill="none" stroke-dasharray="283" stroke-dashoffset="0" />
                 </svg>
                 <div class="absolute inset-0 flex items-center justify-center">
-                    <span id="countdown-text" class="text-3xl font-bold font-mono text-yellow-500">30</span>
+                    <span id="countdown-text" class="text-4xl font-black font-mono text-yellow-500">30</span>
                 </div>
             </div>
-            <p class="mt-4 text-gray-400">Do not close this page to receive reward</p>
+            <h2 class="text-xl font-bold text-white mb-2">DO NOT CLOSE THE TAB</h2>
+            <p class="text-gray-400 text-sm">Task reward will be voided if you return early.</p>
         </div>
     </div>
 
-    <!-- Post Link Modal -->
-    <div id="link-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-gray-800 w-full max-w-md p-6 rounded-xl border border-gray-700">
-            <h2 class="text-xl font-bold mb-4">Add Your Link</h2>
-            <select id="link-type" class="w-full bg-gray-900 border border-gray-700 p-2 rounded mb-3" onchange="updateFreeLinksInfo()">
-                <option value="yt-watch">YouTube Watch (₱5 - 550 clicks)</option>
-                <option value="yt-sub">YouTube Subscribe (₱5 - 260 clicks)</option>
-                <option value="fb-follow">FB Follow (₱5 - 550 clicks)</option>
-                <option value="web-visit">Website Visit (₱5 - 550 clicks)</option>
-                <option value="playstore">PlayStore Visit (₱5 - 550 clicks)</option>
+    <!-- Add Link Modal -->
+    <div id="link-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-gray-800 w-full max-w-md p-6 rounded-2xl border border-gray-700">
+            <h2 class="text-xl font-bold mb-4">Post Link</h2>
+            <select id="link-type" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg mb-4" onchange="updateFreeCountUI()">
+                <option value="yt-watch">YouTube Watch (₱5)</option>
+                <option value="yt-sub">YouTube Subscribe (₱5)</option>
+                <option value="fb-follow">FB Follow (₱5)</option>
+                <option value="web-visit">Website Visit (₱5)</option>
+                <option value="playstore">Playstore Visit (₱5)</option>
             </select>
-            <p id="free-links-info" class="text-xs text-gray-400 mb-3">You have X free link(s) left for this category.</p>
-            <input type="url" id="link-url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 p-2 rounded mb-4">
-            <div class="flex gap-2">
-                <button onclick="closeModals()" class="flex-1 bg-gray-700 py-2 rounded">Cancel</button>
-                <button onclick="submitLink()" class="flex-1 bg-yellow-600 py-2 rounded">Post Link</button>
-            </div>
+            <p id="free-links-info" class="text-xs mb-4 text-green-400"></p>
+            <input type="url" id="link-url" placeholder="Paste link here..." class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg mb-4">
+            <button onclick="submitLink()" id="submit-btn" class="w-full bg-yellow-600 py-3 rounded-lg font-bold">Post Now</button>
+            <button onclick="closeModals()" class="w-full mt-2 text-gray-500 text-sm">Cancel</button>
         </div>
     </div>
 
-    <!-- Ads Library (libtl) -->
     <script src='//libtl.com/sdk.js' data-zone='10555663' data-sdk='show_10555663'></script>
     <script type="module" src="app.js"></script>
 </body>
