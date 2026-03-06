@@ -19,7 +19,7 @@ tg.expand();
 
 const CONFIG = {
     yt_watch:   { label: "Watch Video", reward: 0.01, time: 30, free: 100, paid: 550, cost: 5, key: 'u_yt_w' },
-    yt_sub:     { label: "Subscribe", reward: 0.03, time: 30, free: 50, paid: 65, cost: 7, key: 'u_yt_s' },
+    yt_sub:     { label: "Subscribe", reward: 0.03, time: 30, free: 50, paid: 260, cost: 5, key: 'u_yt_s' },
     fb_follow:  { label: "FB Follow", reward: 0.01, time: 30, free: 100, paid: 550, cost: 5, key: 'u_fb_f' },
     web_visit:  { label: "Visit Website", reward: 0.01, time: 20, free: 100, paid: 550, cost: 5, key: 'u_web' },
     admin_any:  { label: "Admin Promo", reward: 0.03, time: 20, free: 10000, paid: 10000, cost: 0, key: 'admin' }
@@ -206,7 +206,7 @@ document.getElementById('submitPromo').onclick = async () => {
     let cost = (used >= 5) ? c.cost : 0;
     let limit = (used >= 5) ? c.paid : c.free;
 
-    if (userData.balance < cost) return alert("Insufficient balance.");
+    if (userData.balance < cost) return alert("Insufficient balance.Need 5 peso!");
 
     const data = { owner: user.username, ownerId: user.id, rem: limit, ts: Date.now() };
 
