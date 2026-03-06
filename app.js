@@ -20,7 +20,7 @@ tg.expand();
 // TASK MAP
 const CAT_SETTINGS = {
     yt_watch:   { label: "Watch Video", reward: 0.01, time: 30, freeV: 100, paidV: 550, cost: 5, key: 'u_yt_w' },
-    yt_sub:     { label: "Subscribe Channel", reward: 0.03, time: 30, freeV: 50,  paidV: 65,  cost: 7, key: 'u_yt_s' },
+    yt_sub:     { label: "Subscribe Channel", reward: 0.03, time: 30, freeV: 50,  paidV: 260,  cost: 5, key: 'u_yt_s' },
     yt_like:    { label: "Like Video", reward: 0.01, time: 30, freeV: 100, paidV: 550, cost: 5, key: 'u_yt_l' },
     yt_comm:    { label: "Comment Video", reward: 0.01, time: 30, freeV: 100, paidV: 550, cost: 5, key: 'u_yt_c' },
     fb_follow:  { label: "Follow FB Page", reward: 0.01, time: 30, freeV: 100, paidV: 550, cost: 5, key: 'u_fb_f' },
@@ -240,7 +240,7 @@ document.getElementById('btnSubmit').onclick = async () => {
         if (!confirm(`You used all free slots. Create this promotion for ₱${cost}.00 (${limit} clicks)?`)) return;
     }
 
-    if (userData.balance < cost) return alert("Insufficient balance in your wallet.");
+    if (userData.balance < cost) return alert("Insufficient balance in your wallet,work hard and get 5 peso.");
 
     const data = {
         owner: user.username,
