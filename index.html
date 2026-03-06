@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnRewards - Watch & Earn</title>
+    <title>PROPETAS Rewarder - Watch & Earn</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <!-- Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
-        .hidden-section { display: none; }
         .active-tab { border-bottom: 3px solid #fbbf24; color: #fbbf24; }
+        /* Hide scrollbar for tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; } /* For webkit browsers */
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } /* For Edge/Firefox */
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen pb-20">
@@ -32,7 +34,7 @@
             <div class="flex items-center gap-4">
                 <div class="bg-blue-500 p-3 rounded-full"><i class="fab fa-telegram-plane text-2xl"></i></div>
                 <div>
-                    <h2 class="font-bold text-lg" id="display-username text-blue-300">Loading Telegram...</h2>
+                    <h2 class="font-bold text-lg text-blue-300" id="display-username">Loading Telegram...</h2>
                     <p class="text-xs text-gray-400">ID: <span id="user-uid">---</span></p>
                 </div>
             </div>
@@ -41,25 +43,41 @@
         <!-- Navigation Tabs -->
         <div class="flex overflow-x-auto gap-4 mb-6 border-b border-gray-700 no-scrollbar">
             <button onclick="showTab('yt-watch')" class="tab-btn px-4 py-2 whitespace-nowrap active-tab" id="btn-yt-watch">YT Watch</button>
-            <button onclick="showTab('yt-sub')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-yt-sub">YT Sub</button>
-            <button onclick="showTab('fb-follow')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-fb-follow">FB Follow</button>
-            <button onclick="showTab('web-visit')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-web-visit">Website</button>            <button onclick="showTab('playstore')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-playstore">PlayStore</button>
+            <button onclick="showTab('yt-sub')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-yt-sub">YT Sub</button>            <button onclick="showTab('fb-follow')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-fb-follow">FB Follow</button>
+            <button onclick="showTab('web-visit')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-web-visit">Website</button>
+            <button onclick="showTab('playstore')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-playstore">PlayStore</button>
+            <button onclick="showTab('my-links')" class="tab-btn px-4 py-2 whitespace-nowrap" id="btn-my-links">My Links</button>
             <button onclick="showTab('add-link')" class="tab-btn px-4 py-2 whitespace-nowrap bg-yellow-600 rounded-t-lg" id="btn-add">Add Link</button>
         </div>
 
-        <!-- Content Area -->
+        <!-- Content Area for Tasks and My Links -->
         <div id="task-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Tasks will be injected here by app.js -->
+            <!-- Tasks/My Links will be injected here by app.js -->
+        </div>
+
+        <!-- Follow Us Section -->
+        <div class="mt-10 p-4 bg-gray-800 rounded-lg border border-gray-700">
+            <h3 class="text-lg font-bold mb-3 text-yellow-500">Follow Us</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <a href="https://t.me/paperhouseinc" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+                    <i class="fab fa-telegram-plane"></i> Telegram Channel
+                </a>
+                <a href="https://t.me/paperhouseinc" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+                    <i class="fab fa-telegram-plane"></i> Telegram Group
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61586281245735" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+                    <i class="fab fa-facebook"></i> Facebook Page
+                </a>
+            </div>
         </div>
 
         <!-- Admin Access -->
-        <div class="mt-10 p-4 border border-dashed border-gray-600 rounded text-center">
-            <button onclick="openAdmin()" class="text-gray-500 text-xs hover:text-white">Admin Access</button>
+        <div class="mt-10 p-4 border border-dashed border-gray-600 rounded text-center">            <button onclick="openAdmin()" class="text-gray-500 text-xs hover:text-white">Admin Access</button>
         </div>
 
         <!-- Coffee Support -->
         <div class="mt-6 text-center">
-            <a href="https://paypal.me/otico.isai2@gmail.com" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full text-sm transition">
+            <a href="https://www.paypal.com/paypalme/otico.isai2@gmail.com" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full text-sm transition">
                 <i class="fas fa-coffee"></i> Buy Admin Coffee
             </a>
         </div>
@@ -68,8 +86,9 @@
     <!-- Modals -->
     <!-- Timer Overlay -->
     <div id="timer-modal" class="fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center z-[100] hidden">
-        <div class="text-center">
-            <h2 class="text-2xl mb-4" id="modal-task-title">Watching Video...</h2>
+        <div class="text-center bg-gray-800 p-6 rounded-xl border border-gray-700">
+            <h2 class="text-2xl mb-2" id="modal-task-title">Watching Video...</h2>
+            <p class="text-sm text-gray-400 mb-4">The link has opened in a <strong class="text-yellow-400">new tab</strong>. Please complete the task there and return to this page when the timer finishes.</p>
             <div class="relative w-32 h-32 mx-auto">
                 <svg class="w-full h-full" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="45" stroke="#374151" stroke-width="5" fill="none" />
@@ -87,17 +106,18 @@
     <div id="link-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-gray-800 w-full max-w-md p-6 rounded-xl border border-gray-700">
             <h2 class="text-xl font-bold mb-4">Add Your Link</h2>
-            <select id="link-type" class="w-full bg-gray-900 border border-gray-700 p-2 rounded mb-3">
+            <select id="link-type" class="w-full bg-gray-900 border border-gray-700 p-2 rounded mb-3" onchange="updateFreeLinksInfo()">
                 <option value="yt-watch">YouTube Watch (₱5 - 550 clicks)</option>
                 <option value="yt-sub">YouTube Subscribe (₱5 - 260 clicks)</option>
                 <option value="fb-follow">FB Follow (₱5 - 550 clicks)</option>
                 <option value="web-visit">Website Visit (₱5 - 550 clicks)</option>
                 <option value="playstore">PlayStore Visit (₱5 - 550 clicks)</option>
             </select>
+            <p id="free-links-info" class="text-xs text-gray-400 mb-3">You have X free link(s) left for this category.</p>
             <input type="url" id="link-url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 p-2 rounded mb-4">
             <div class="flex gap-2">
                 <button onclick="closeModals()" class="flex-1 bg-gray-700 py-2 rounded">Cancel</button>
-                <button onclick="submitLink()" class="flex-1 bg-yellow-600 py-2 rounded">Pay ₱5 & Post</button>
+                <button onclick="submitLink()" class="flex-1 bg-yellow-600 py-2 rounded">Post Link</button>
             </div>
         </div>
     </div>
