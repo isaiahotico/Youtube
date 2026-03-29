@@ -2,16 +2,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue, push, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// --- DATABASE CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyBwpa8mA83JAv2A2Dj0rh5VHwodyv5N3dg",
-    authDomain: "freegcash-ads.firebaseapp.com",
-    databaseURL: "https://freegcash-ads-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "freegcash-ads",
-    storageBucket: "freegcash-ads.firebasestorage.app",
-    messagingSenderId: "608086825364",
-    appId: "1:608086825364:web:3a8e628d231b52c6171781"
+    authDomain: "facebook-follow-to-follow.firebaseapp.com",
+    databaseURL: "https://facebook-follow-to-follow-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "facebook-follow-to-follow",
+    storageBucket: "facebook-follow-to-follow.firebasestorage.app",
+    messagingSenderId: "589427984313",
+    appId: "1:589427984313:web:a17b8cc851efde6dd79868"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
